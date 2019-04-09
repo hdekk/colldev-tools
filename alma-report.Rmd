@@ -1,0 +1,58 @@
+---
+title: "R Notebook"
+output: html_notebook
+---
+
+Use readxl to read spreadsheet data.
+
+```{r}
+library(readxl)
+library(readr)
+library(dplyr)
+library(tidyr)
+alma <- read_excel("URI-ALMA-QA-04082019.xlsx", skip = 2)
+names(alma) <- c("title", "lcclass", "pubdate", "publisher", "physitem", "lang")
+
+maa <- read_excel("BLL_Feb_1_2018.xlsx", skip = 1)
+names(maa) <- c("title",	"author",	"edition",	"publisher",	"pubyear",	"rating",	"topics")
+
+```
+Attempt to prevent memory error by filtering the datasetx to include only a single year.
+```{r}
+alma <- alma %>% 
+  mutate(pubyear = parse_number(pubdate)) %>%
+  filter(pubyear == 2008)
+
+maa <- maa %>%
+  filter(pubyear == 2008)
+```
+
+
+Do a fuzzy join (generates error message -- Error: cannot allocate vector of size 1.0 Gb)
+```{r}
+library(fuzzyjoin)
+library(dplyr)
+matches <- stringdist_join(maa, alma, 
+                by = "title",
+                mode = "left",
+                ignore_case = TRUE, 
+                method = "jw", 
+                max_dist = 99, 
+                distance_col = "dist") %>%
+  arrange(dist) 
+```
+
+```{r}
+review <- matches %>% 
+  select(title.x, title.y, dist, publisher.x, publisher.y, rating, topics) %>%
+  arrange(title.x, dist) %>%
+  group_by(title.x) %>%
+  summarize(score = first(dist),
+            title.y = first(title.y),
+            publisher.x = first(publisher.x),
+            publisher.y = first(publisher.y),
+            rating = first(rating),
+            topics = first(topics)) %>%
+  arrange(desc(score))
+```
+
