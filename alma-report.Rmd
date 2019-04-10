@@ -54,7 +54,9 @@ matchtitles <- function(x = maa, y = alma, yr=2019) {
             rating = first(rating),
             topics = first(topics)) %>%
     mutate(pubmatch = ifelse(str_detect(publisher.x,publisher.y) |
-                              str_detect(publisher.y,publisher.x), 1, 0)) %>%
+                              str_detect(publisher.y,publisher.x), 1, 0),
+           partialmatch = ifelse(grepl(paste("^",tolower(title.x),sep=""), tolower(title.y)) |
+                                  grepl(paste("^",tolower(title.y),sep=""), tolower(title.x)), 1, 0)) %>%
     arrange(desc(score)) %>%
     filter(score > .1) 
   return(matches)  
@@ -67,6 +69,9 @@ matchtitles <- function(x = maa, y = alma, yr=2019) {
 - Merge with the maa list and create a buy list (by year)
 ```{r}
 #pre2000 <- matchtitles(maa, alma, 2000)
+for (yr in 2000:2018) {
+  df <- matchtitles(maa, alma, yr)
+}
 df2005 <- matchtitles(maa, alma, 2005)
 df2006 <- matchtitles(maa, alma, 2006)
 df2007 <- matchtitles(maa, alma, 2007)
