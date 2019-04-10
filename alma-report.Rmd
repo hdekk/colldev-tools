@@ -20,7 +20,9 @@ names(maa) <- c("title",	"author",	"edition",	"publisher",	"pubyear",	"rating",	
 
 ```
 
-Attempt to prevent memory error by filtering the datasetx to include only a single year.
+Create a match title function to implement a fuzzy join using stringdist_join.  
+**To do**  
+- Do additional test on cases with pubmatch == 1 to look for a match at the beginning of the title, i.e. str_locate("foobar", "foo")
 
 ```{r}
 
@@ -58,18 +60,13 @@ matchtitles <- function(x = maa, y = alma, yr=2019) {
   return(matches)  
 }
 
-# alma <- alma %>% 
-#   mutate(pubyear = parse_number(pubdate)) %>%
-#   filter(pubyear == 2008)
-# 
-# maa <- maa %>%
-#   filter(pubyear == 2008)
 ```
 
-
-Do a fuzzy join (generates error message -- Error: cannot allocate vector of size 1.0 Gb)
+**To do**  
+- Use a loop to run thru all the years
+- Merge with the maa list and create a buy list (by year)
 ```{r}
-pre2000 <- matchtitles(maa, alma, 2000)
+#pre2000 <- matchtitles(maa, alma, 2000)
 df2005 <- matchtitles(maa, alma, 2005)
 df2006 <- matchtitles(maa, alma, 2006)
 df2007 <- matchtitles(maa, alma, 2007)
