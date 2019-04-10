@@ -50,7 +50,9 @@ matchtitles <- function(x = maa, y = alma, yr=2019) {
             rating = first(rating),
             topics = first(topics)) %>%
     arrange(desc(score)) %>%
-    filter(score > .1)
+    filter(score > .1) #%>%
+    #filter(score > .125 & !grepl(publisher.x,publisher.y)) %>%
+    #filter(score > .125 & !grepl(publisher.y,publisher.x))
   return(matches)  
 }
 
@@ -65,7 +67,8 @@ matchtitles <- function(x = maa, y = alma, yr=2019) {
 
 Do a fuzzy join (generates error message -- Error: cannot allocate vector of size 1.0 Gb)
 ```{r}
-
+df2006 <- matchtitles(maa, alma, 2006)
+df2007 <- matchtitles(maa, alma, 2007)
 df2008 <- matchtitles(maa, alma, 2008)
 df2009 <- matchtitles(maa, alma, 2009)
 df2010 <- matchtitles(maa, alma, 2010)
