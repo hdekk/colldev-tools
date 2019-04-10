@@ -26,15 +26,17 @@ Attempt to prevent memory error by filtering the datasetx to include only a sing
 
 matchtitles <- function(x = maa, y = alma, yr=2019) {
   y <- y %>% 
-  mutate(pubyear = parse_number(pubdate),
-         title = str_replace(title, "[ ]*/$", "")) %>%
-  filter(pubyear == yr)
+    mutate(pubyear = parse_number(pubdate)) %>%
+    mutate(title = str_replace(title, "\\s*/$", "")) %>% # remove trailing "/"
+    mutate(cleantitle = gsub("\\s*[:punct:]\\s+", " ", gsub("^An{0,1}\\s+", "", title))) %>% 
+    filter(pubyear == yr)
 
   x <- x %>%
-  filter(pubyear == yr)
+    mutate(cleantitle = gsub("\\s*[:punct:]\\s+", " ", gsub("^An{0,1}\\s+", "", title))) %>%
+    filter(pubyear == yr)
   
   matches <- stringdist_join(x, y, 
-                by = "title",
+                by = "cleantitle",
                 mode = "left",
                 ignore_case = TRUE, 
                 method = "jw", 
@@ -49,10 +51,10 @@ matchtitles <- function(x = maa, y = alma, yr=2019) {
             publisher.y = first(publisher.y),
             rating = first(rating),
             topics = first(topics)) %>%
+    mutate(pubmatch = ifelse(str_detect(publisher.x,publisher.y) |
+                              str_detect(publisher.y,publisher.x), 1, 0)) %>%
     arrange(desc(score)) %>%
-    filter(score > .1) #%>%
-    #filter(score > .125 & !grepl(publisher.x,publisher.y)) %>%
-    #filter(score > .125 & !grepl(publisher.y,publisher.x))
+    filter(score > .1) 
   return(matches)  
 }
 
@@ -67,6 +69,8 @@ matchtitles <- function(x = maa, y = alma, yr=2019) {
 
 Do a fuzzy join (generates error message -- Error: cannot allocate vector of size 1.0 Gb)
 ```{r}
+pre2000 <- matchtitles(maa, alma, 2000)
+df2005 <- matchtitles(maa, alma, 2005)
 df2006 <- matchtitles(maa, alma, 2006)
 df2007 <- matchtitles(maa, alma, 2007)
 df2008 <- matchtitles(maa, alma, 2008)
